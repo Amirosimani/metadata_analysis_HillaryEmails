@@ -62,9 +62,12 @@ people <- as.data.frame(sapply(people, function(x) gsub('From:', "", x)))
 people <- as.data.frame(sapply(people, function(x) gsub('\\\\n', "", x)))
 people <- as.data.frame(sapply(people, function(x) gsub("'", "", x)))
 #people <- as.data.frame(sapply(people, function(x) gsub('[[:punct:]]', "", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("[[:digit:]]+", "", x)))
+
 
 people <- mutate_each(people, funs(tolower))
 people <- as.data.frame(sapply(people, function(x) gsub("confidential.*","", x)))
+
 
 
 ## split to & cc columns
@@ -80,12 +83,11 @@ cc <- split_columns(people,cc)
 people_splited <- cbind(people$from, rec, cc) #create new dataframe with seperated columns
 colnames(people_splited)[1] <- "from"
 
-people_selected <- as.data.frame(people_splited[, 1:21, with = FALSE]) #selecting the first 20 columns
+people_selected <- as.data.frame(people_splited[, 1:6, with = FALSE]) #selecting the first 5 columns
 
 ## make edge list 
 Matrix2Edge <- function(x){
-  
-  data <- x
+   data <- x
   final <- data.frame("a"=character(),"b"=character())
   
   #the idea is to iterate over the columns of  the dataframe, melt it, and each time drop the melted column
@@ -101,11 +103,25 @@ Matrix2Edge <- function(x){
   final <- final[!(final$b=="" | final$b==" "),]
   return(final)
 }
+
 edge_list <- Matrix2Edge(people_selected)
-write.csv(edge_list, file = "H_edgelist.csv")
+
+#edge_list <- edge_list[nchar(edge_list$b) < 35 ] 
+edge_list <- edge_list[rowSums(is.na(edge_list)) == 0,]
+colnames(edge_list) <- c('from','to')
+write.csv(edge_list, file = "H_edgelist2.csv")
 
 
 ### 3. Entity resolution
+edge_list <- read.csv(file.choose(), sep = ",")
+
+dist.name<-adist(edge_list$a,edge_list$b, partial = TRUE, ignore.case = TRUE)
+
+
+
+
+
+
 library(RecordLinkage)
 rpairs=compare.dedup(edge_list)
 
@@ -137,4 +153,5 @@ for (i in 1:nrow(edge_list)){
             # check if there is any forwarded confidential emails
             # optimize section 2 {creating coressapondant list}
             # better entity resolution
+            #use all the columns for the edge list -> spark
 
