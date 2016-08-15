@@ -64,10 +64,25 @@ people <- as.data.frame(sapply(people, function(x) gsub("'", "", x)))
 #people <- as.data.frame(sapply(people, function(x) gsub('[[:punct:]]', "", x)))
 people <- as.data.frame(sapply(people, function(x) gsub("[[:digit:]]+", "", x)))
 
-
 people <- mutate_each(people, funs(tolower))
-people <- as.data.frame(sapply(people, function(x) gsub("confidential.*","", x)))
 
+people <- as.data.frame(sapply(people, function(x) gsub("confidential.*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("re:*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("fw:*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("fwd:*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("sent*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("subject*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("classified*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("unclassified*","", x)))
+
+
+people <- as.data.frame(sapply(people, function(x) gsub("monday*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("tuesday*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("wednesday*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("thursday*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("friday*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("saturday*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("sunday*","", x)))
 
 
 ## split to & cc columns
@@ -109,6 +124,7 @@ edge_list <- Matrix2Edge(people_selected)
 #edge_list <- edge_list[nchar(edge_list$b) < 35 ] 
 edge_list <- edge_list[rowSums(is.na(edge_list)) == 0,]
 colnames(edge_list) <- c('from','to')
+
 write.csv(edge_list, file = "H_edgelist2.csv")
 
 
