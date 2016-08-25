@@ -74,7 +74,9 @@ people <- as.data.frame(sapply(people, function(x) gsub("sent*","", x)))
 people <- as.data.frame(sapply(people, function(x) gsub("subject*","", x)))
 people <- as.data.frame(sapply(people, function(x) gsub("classified*","", x)))
 people <- as.data.frame(sapply(people, function(x) gsub("unclassified*","", x)))
-
+people <- as.data.frame(sapply(people, function(x) gsub("date*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("months*","", x)))
+people <- as.data.frame(sapply(people, function(x) gsub("//*","", x)))
 
 people <- as.data.frame(sapply(people, function(x) gsub("monday*","", x)))
 people <- as.data.frame(sapply(people, function(x) gsub("tuesday*","", x)))
@@ -119,8 +121,24 @@ Matrix2Edge <- function(x){
   return(final)
 }
 
+
+## try the edge list with only melting on "from" column
+el <- melt(people_selected, id = ("from"))
+el <- subset(el, select = -c(variable) )
+el <- el[rowSums(is.na(el)) == 0,]
+el$from <- trimws(el$from)  #remove white space
+el$value <- trimws(el$value)
+el$from[grep("clinton", el$from)] <- "h"  #change all clinton emails
+el$value[grep("clinton", el$value)] <- "h"
+
+
+
+write.csv(el, file = "H_el.csv")
+
+---------------
 edge_list <- Matrix2Edge(people_selected)
 
+#delete empty/NA fields
 #edge_list <- edge_list[nchar(edge_list$b) < 35 ] 
 edge_list <- edge_list[rowSums(is.na(edge_list)) == 0,]
 colnames(edge_list) <- c('from','to')
@@ -169,5 +187,6 @@ for (i in 1:nrow(edge_list)){
             # check if there is any forwarded confidential emails
             # optimize section 2 {creating coressapondant list}
             # better entity resolution
-            #use all the columns for the edge list -> spark
+            # use all the columns for the edge list -> spark
+            # DO THE NETWORK ANALYSIS BASED ON USER'S KEY WORDS
 
